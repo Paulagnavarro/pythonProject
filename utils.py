@@ -8,25 +8,66 @@ def process_data(data):
     os.makedirs('static/graphs', exist_ok=True)
     graphs = {}
 
+    import matplotlib.ticker as ticker
+
     # Gráfico de Distribuição do Preço de Compra
-    plt.figure()
-    sns.histplot(data['buy_price'].dropna())
-    plt.xlabel('Preço de Compra')
-    plt.title('Distribuição do Preço de Compra')
-    buy_price_path = 'static/graphs/dist_price.png'
+    plt.figure(figsize=(12, 8))  # Tamanho do gráfico
+    hist_plot = sns.histplot(data['buy_price'].dropna(), kde=True, color='#66B3FF', bins=30)
+
+    mean_price = data['buy_price'].mean()
+    median_price = data['buy_price'].median()
+    plt.axvline(mean_price, color='red', linestyle='--', linewidth=1.5, label=f'Média: €{mean_price:,.2f}')
+    plt.axvline(median_price, color='green', linestyle='--', linewidth=1.5, label=f'Mediana: €{median_price:,.2f}')
+
+    plt.xlabel('Preço de Compra (€)', fontsize=16, fontweight='bold')
+    plt.ylabel('Frequência (número de imóveis)', fontsize=16, fontweight='bold')
+    plt.title('Distribuição do Preço de Compra', fontsize=18, fontweight='bold')
+
+    plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'€{x:,.2f}'))
+
+    for p in hist_plot.patches:
+        height = p.get_height()
+        if height > 20:
+            plt.text(p.get_x() + p.get_width() / 2, height + 5, f'{int(height)}',
+                     ha='center', fontsize=12, color='black')
+
+    plt.legend(fontsize=14)
+
+    plt.grid(True, linestyle='--', alpha=0.7)
+
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+
+    buy_price_path = 'static/graphs/dist_price_enhanced.png'
     plt.savefig(buy_price_path)
     plt.close()
     graphs['Distribuição do Preço de Compra'] = buy_price_path
 
+
     # Gráfico de Distribuição da Área Construída
-    plt.figure()
-    sns.histplot(data['sq_mt_built'].dropna())
-    plt.xlabel('Área Construída (m²)')
-    plt.title('Distribuição da Área Construída')
-    built_area_path = 'static/graphs/dist_sq_mt_built.png'
+    plt.figure(figsize=(12, 8))
+    sns.histplot(data['sq_mt_built'].dropna(), bins=30, color='#4C72B0', kde=True)
+    plt.title('Distribuição da Área Construída', fontsize=16)
+    plt.xlabel('Área Construída (m²)', fontsize=14)
+    plt.ylabel('Quantidade de Imóveis', fontsize=14)
+
+    mean_val = data['sq_mt_built'].mean()
+    median_val = data['sq_mt_built'].median()
+
+    plt.axvline(mean_val, color='r', linestyle='--', label=f'Média: {mean_val:.2f} m²')
+    plt.axvline(median_val, color='g', linestyle='-', label=f'Mediana: {median_val:.2f} m²')
+
+    plt.legend()
+
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    built_area_path = 'static/graphs/dist_sq_mt_built_enhanced.png'
     plt.savefig(built_area_path)
     plt.close()
     graphs['Distribuição da Área Construída'] = built_area_path
+
 
     # Gráfico de Distribuição do Número de Quartos
     plt.figure()
@@ -39,6 +80,7 @@ def process_data(data):
     plt.close()
     graphs['Distribuição do Número de Quartos'] = room_distribution_path
 
+
     # Gráfico de Pizza: Distribuição do Número de Quartos
     plt.figure()
     data['n_rooms'].value_counts().plot(kind='pie', autopct='%1.1f%%')
@@ -49,20 +91,120 @@ def process_data(data):
     plt.close()
     graphs['Distribuição do Número de Quartos (Pizza)'] = room_distribution_pie_path
 
+
+    # Gráfico de Pizza: Distribuição de Estacionamento
+    plt.figure(figsize=(10, 6))
+
+    parking_distribution = pd.Series('Sem Estacionamento', index=data.index)
+    parking_distribution[data['has_private_parking'] == True] = 'Estacionamento Privado'
+    parking_distribution[data['has_public_parking'] == True] = 'Estacionamento Público'
+
+    parking_counts = parking_distribution.value_counts()
+
+    parking_counts.plot(
+        kind='pie',
+        autopct='%1.1f%%',
+        colors=['#FF9999', '#66B3FF', '#99FF99'],
+        textprops={'fontsize': 14},
+        wedgeprops={'linewidth': 1, 'edgecolor': 'black'}
+    )
+
+    plt.title('Distribuição de Estacionamento', fontsize=16, fontweight='bold')
+    plt.ylabel('')
+
+    parking_pie_path = 'static/graphs/parking_pie.png'
+    plt.savefig(parking_pie_path)
+    plt.close()
+    graphs['Distribuição de Estacionamento'] = parking_pie_path
+
+
+    # Gráfico de Barras: Número de Banheiros
+    plt.figure(figsize=(12, 8))
+
+    sns.countplot(x='n_bathrooms', data=data, palette='coolwarm')
+
+    plt.title('Distribuição do Número de Banheiros', fontsize=18, fontweight='bold')
+    plt.xlabel('Número de Banheiros', fontsize=16, fontweight='bold')
+    plt.ylabel('Quantidade de Imóveis', fontsize=16, fontweight='bold')
+
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+
+    plt.grid(True, linestyle='--', alpha=0.7)
+
+    bathrooms_path = 'static/graphs/bathrooms_distribution.png'
+    plt.savefig(bathrooms_path)
+    plt.close()
+
+    graphs['Distribuição do Número de Banheiros'] = bathrooms_path
+
+
+    # Gráfico de Dispersão: Preço de Compra x Ano de Construção
+    plt.figure(figsize=(12, 8))
+
+    sns.scatterplot(x='built_year', y='buy_price', data=data, color='#66B3FF')
+
+    plt.title('Gráfico de Dispersão: Preço de Compra x Ano de Construção', fontsize=18, fontweight='bold')
+    plt.xlabel('Ano de Construção', fontsize=16, fontweight='bold')
+    plt.ylabel('Preço de Compra (€)', fontsize=16, fontweight='bold')
+
+    plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'€{x:,.2f}'))
+
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+
+    plt.grid(True, linestyle='--', alpha=0.7)
+
+    scatter_price_year_path = 'static/graphs/scatter_price_year.png'
+    plt.savefig(scatter_price_year_path)
+    plt.close()
+    graphs['Gráfico de Dispersão: Preço de Compra x Ano de Construção'] = scatter_price_year_path
+
+
+    # Gráfico de Dispersão: Preço de Compra vs. Número de Banheiros
+    avg_price_by_bathrooms = data.groupby('n_bathrooms')['buy_price'].mean().reset_index()
+
+    plt.figure(figsize=(12, 8))
+    sns.barplot(x='n_bathrooms', y='buy_price', data=avg_price_by_bathrooms, color='#66B3FF')
+
+    plt.title('Gráfico de Barras: Preço de Compra Médio por Número de Banheiros', fontsize=18, fontweight='bold')
+    plt.xlabel('Número de Banheiros', fontsize=16, fontweight='bold')
+    plt.ylabel('Preço de Compra Médio (€)', fontsize=16, fontweight='bold')
+
+    plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'€{x:,.2f}'))
+
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+
+    plt.grid(True, linestyle='--', alpha=0.7)
+
+    bar_bathrooms_price_path = 'static/graphs/bar_bathrooms_price.png'
+    plt.savefig(bar_bathrooms_price_path)
+    plt.close()
+
+
     # Boxplot: Preço de Compra por Número de Quartos
-    plt.figure()
+    plt.figure(figsize=(12, 8))
+
     sns.boxplot(x='n_rooms', y='buy_price', data=data)
-    plt.xlabel('Número de Quartos')
-    plt.ylabel('Preço de Compra')
-    plt.title('Boxplot do Preço de Compra por Número de Quartos')
+
+    plt.xlabel('Número de Quartos', fontsize=16, fontweight='bold')
+    plt.ylabel('Preço de Compra (€)', fontsize=16, fontweight='bold')
+    plt.title('Boxplot do Preço de Compra por Número de Quartos', fontsize=18, fontweight='bold')
+
+    plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'€{x:,.2f}'))
+
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+
     boxplot_path = 'static/graphs/price_boxplot.png'
     plt.savefig(boxplot_path)
     plt.close()
     graphs['Boxplot do Preço de Compra por Número de Quartos'] = boxplot_path
 
+
     # Heatmap: Correlação entre Variáveis
-    plt.figure(figsize=(10, 8))  # Ajustando o tamanho do gráfico
-    # Filtrando apenas colunas numéricas
+    plt.figure(figsize=(10, 8))
     numeric_data = data.select_dtypes(include=[float, int])
     correlation_matrix = numeric_data.corr()
     sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f')

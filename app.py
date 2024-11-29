@@ -1,7 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import pandas as pd
-from data_handler import DataHandler
-from model_trainer import ModelTrainer
 from utils import process_data, generate_map, generate_interactive_plots
 from model import train_model, predict
 from sklearn.metrics import mean_absolute_error
@@ -124,60 +122,6 @@ def make_prediction():
         prediction = predict(user_input, model)
 
     return render_template('predict.html', prediction=prediction)
-
-
-@app.route('/diagnose')
-def diagnose():
-    global data
-    if data is not None:
-        if 'latitude' not in data.columns or 'longitude' not in data.columns:
-            flash("As colunas 'latitude' e 'longitude' não estão presentes no conjunto de dados.", "error")
-            return render_template('diagnose.html')
-
-        lat_lon_missing = data[['latitude', 'longitude']].isnull().sum()
-        flash(f"Número de valores ausentes em 'latitude': {lat_lon_missing['latitude']}", "info")
-        flash(f"Número de valores ausentes em 'longitude': {lat_lon_missing['longitude']}", "info")
-        return render_template('diagnose.html', missing_data=lat_lon_missing.to_dict())
-    else:
-        flash("Nenhum dado disponível para diagnóstico.", "error")
-        return redirect(url_for('index'))
-
-data_handler = DataHandler('data/houses_Madrid.csv')
-
-@app.route('/upload-new-data', methods=['POST'])
-def upload_new_data():
-    file = request.files['file']
-    if not file:
-        return jsonify({'error': 'Nenhum arquivo foi enviado'}), 400
-
-    new_data = pd.read_csv(file)
-
-    data_handler.add_new_data(new_data)
-    data_handler.save_updated_data()
-
-    return jsonify({'message': 'Dados adicionados com sucesso!'})
-
-from datetime import datetime
-
-@app.route('/retrain', methods=['POST'])
-def retrain_model():
-    try:
-        data = pd.read_csv('data/houses_Madrid.csv')
-
-        if os.path.exists('model_vectorizer.pkl'):
-            vectorizer = joblib.load('model_vectorizer.pkl')
-        else:
-            vectorizer = None
-
-        trainer = ModelTrainer(data, vectorizer=vectorizer)
-
-        model = trainer.train_model()
-
-        trainer.save_model('model.pkl')
-
-        return jsonify({"message": "Modelo re-treinado com sucesso!"})
-    except Exception as e:
-        return jsonify({"message": f"Erro ao re-treinar o modelo: {str(e)}"})
 
 if __name__ == '__main__':
     app.run(debug=True)

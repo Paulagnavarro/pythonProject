@@ -39,3 +39,4 @@ def train_model(data, classifier_type, max_depth=None, n_neighbors=None):
 def predict(features, model):
     prediction = model.predict([features])
     return prediction[0]
+

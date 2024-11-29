@@ -126,10 +126,10 @@
         <div class="graphs">
             <h2>Gráficos de Distribuição</h2>
             <h3>Distribuição do Preço de Compra</h3>
-            <img src="{{ url_for('static', filename='graphs/dist_price.png') }}" alt="Gráfico de Distribuição do Preço de Compra">
+            <img src="{{ url_for('static', filename='graphs/dist_price_enhanced.png') }}" alt="Gráfico de Distribuição do Preço de Compra">
 
             <h3>Distribuição da Área Construída</h3>
-            <img src="{{ url_for('static', filename='graphs/dist_sq_mt_built.png') }}" alt="Gráfico de Distribuição da Área Construída">
+            <img src="{{ url_for('static', filename='graphs/dist_sq_mt_built_enhanced.png') }}" alt="Gráfico de Distribuição da Área Construída">
 
             <h3>Distribuição do Número de Quartos</h3>
             <img src="{{ url_for('static', filename='graphs/room_distribution.png') }}" alt="Gráfico de Distribuição do Número de Quartos">
@@ -138,7 +138,16 @@
             <img src="{{ url_for('static', filename='graphs/room_distribution_pie.png') }}" alt="Gráfico de Pizza de Distribuição do Número de Quartos">
 
             <h3>Gráfico de Pizza: Distribuição de Estacionamento</h3>
-            <img src="{{ url_for('static', filename='graphs/parking_pie.png') }}" alt="Gráfico de Pizza de Distribuição do Número de Quartos">
+            <img src="{{ url_for('static', filename='graphs/parking_pie.png') }}" alt="Gráfico de Pizza de Estacionamento">
+
+            <h3>Gráfico de Barras: Número de Banheiros</h3>
+            <img src="{{ url_for('static', filename='graphs/bathrooms_distribution.png') }}" alt="Gráfico de Barras de Número de Banheiros">
+
+            <h3>Gráfico de Dispersão: Preço de Compra x Ano de Construção</h3>
+            <img src="{{ url_for('static', filename='graphs/scatter_price_year.png') }}" alt="Gráfico de Dispersão de Preço de Compra x Ano de Construção">
+
+            <h3>Gráfico de Dispersão: Preço de Compra vs. Número de Banheiros</h3>
+            <img src="{{ url_for('static', filename='graphs/bar_bathrooms_price.png') }}" alt="Gráfico de Dispersão de Preço de Compra vs. Número de Banheiros">
 
             <h3>Boxplot do Preço de Compra por Número de Quartos</h3>
             <img src="{{ url_for('static', filename='graphs/price_boxplot.png') }}" alt="Boxplot do Preço de Compra por Número de Quartos">

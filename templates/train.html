@@ -81,12 +81,6 @@
         {% if model_trained %}
             <a href="{{ url_for('make_prediction') }}" class="predict-link">Fazer Previsão</a>
         {% endif %}
-
-       <form action="{{ url_for('retrain_model') }}" method="POST">
-            <button type="submit" class="btn btn-primary">Re-treinar Modelo</button>
-        </form>
-
-
     </div>
 </body>
 </html>
